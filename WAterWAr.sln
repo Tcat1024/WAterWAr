@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WAterWAr.CSharp.Plugins", "WAterWAr.CSharp.Plugins.csproj", "{9DF8F714-4575-8C6A-C36E-7D8381F21E06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WAterWAr.CSharp", "WAterWAr.CSharp.csproj", "{C1DDC004-647D-1B33-9519-D90CE8772183}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WAterWAr.CSharp.Editor", "WAterWAr.CSharp.Editor.csproj", "{D7DFE9B0-EB94-67FA-6840-74403BD8D8FA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9DF8F714-4575-8C6A-C36E-7D8381F21E06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DF8F714-4575-8C6A-C36E-7D8381F21E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DF8F714-4575-8C6A-C36E-7D8381F21E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DF8F714-4575-8C6A-C36E-7D8381F21E06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1DDC004-647D-1B33-9519-D90CE8772183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1DDC004-647D-1B33-9519-D90CE8772183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1DDC004-647D-1B33-9519-D90CE8772183}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1DDC004-647D-1B33-9519-D90CE8772183}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7DFE9B0-EB94-67FA-6840-74403BD8D8FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7DFE9B0-EB94-67FA-6840-74403BD8D8FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7DFE9B0-EB94-67FA-6840-74403BD8D8FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7DFE9B0-EB94-67FA-6840-74403BD8D8FA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
