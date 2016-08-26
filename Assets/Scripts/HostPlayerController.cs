@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof(CharacterController))]
 public class HostPlayerController : MonoBehaviour
 {
     // Variables
@@ -31,24 +30,27 @@ public class HostPlayerController : MonoBehaviour
     public float ViewAutoSmooth;
     public float ViewAdjustSmooth;
     public float TurnSmooth;
-    [Range(0f,1f)]
+    [Range(0f, 1f)]
     public float GravityMultiplier = 1f;
     public float CameraEpsilon = 0.2f;
-
+    public string CameraStopLayerName;
+    public bool IsFiring { get; private set; }
 
     private Vector2 m_MoveInput;
     private Vector3 m_MoveDir;
     private Vector2 m_CameraInput;
     private Vector3 m_CameraFocusCenter;
     private float m_CameraDist;
-    
+
     private Vector3 m_PlayerTarForward;
     private bool m_Jump;
     private bool m_Jumping;
     private bool m_IsPreGrounding;
     private bool m_IsAdjustingCamera;
+    private bool m_IsMoving;
     private float m_CurSpeed;
     private CollisionFlags m_CollisionFlags;
+    private int m_CameraStopLayer = -1;
 
     private CharacterController m_CharacterController;
 
@@ -57,23 +59,29 @@ public class HostPlayerController : MonoBehaviour
     void Awake()
     {
         m_CharacterController = GetComponent<CharacterController>();
-        m_CameraFocusCenter = new Vector3(0, HostPlayerCamera.localPosition.y -  Mathf.Abs(HostPlayerCamera.localPosition.z) * Mathf.Tan(HostPlayerCamera.localRotation.eulerAngles.x * Mathf.PI / 180f), 0);
+        m_CameraFocusCenter = new Vector3(0, HostPlayerCamera.localPosition.y - Mathf.Abs(HostPlayerCamera.localPosition.z) * Mathf.Tan(HostPlayerCamera.localRotation.eulerAngles.x * Mathf.PI / 180f), 0);
         m_CameraDist = Vector3.Distance(m_CameraFocusCenter, HostPlayerCamera.transform.localPosition);
+
+
+        if(CameraStopLayerName != null && CameraStopLayerName.Length > 0)
+        {
+            m_CameraStopLayer = LayerMask.NameToLayer(CameraStopLayerName);
+        }
     }
 
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start()
     {
-	
-	}
-	
-	// Update is called once per frame
-	void Update ()
+
+    }
+
+    // Update is called once per frame
+    void Update()
     {
-        if(!m_Jumping)
+        if (!m_Jumping)
             m_Jump = InputManager.Instance.Jump;
 
-        if(!m_IsPreGrounding && m_CharacterController.isGrounded)
+        if (!m_IsPreGrounding && m_CharacterController.isGrounded)
         {
             m_Jumping = false;
         }
@@ -82,12 +90,13 @@ public class HostPlayerController : MonoBehaviour
 
         HostPlayer.transform.forward = Vector3.Slerp(HostPlayer.transform.forward, m_PlayerTarForward, Time.deltaTime * TurnSmooth);
 
-        if(InputManager.Instance.FireAxisPushed)
+        if (InputManager.Instance.FireAxisPushed)
         {
             m_IsAdjustingCamera = true;
+            IsFiring = true;
             m_CameraInput = new Vector2(InputManager.Instance.FireAxisX, InputManager.Instance.FireAxisY);
         }
-        else if(InputManager.Instance.ViewAxisPushed)
+        else if (InputManager.Instance.ViewAxisPushed)
         {
             m_IsAdjustingCamera = true;
             m_CameraInput = new Vector2(InputManager.Instance.ViewAxisX, InputManager.Instance.ViewAxisY);
@@ -96,13 +105,27 @@ public class HostPlayerController : MonoBehaviour
         {
             m_IsAdjustingCamera = false;
         }
+
         if (m_IsAdjustingCamera)
         {
             float eulerx = -ViewYTurnSpeed * m_CameraInput.y + HostPlayerCamera.localRotation.eulerAngles.x;
             eulerx -= (int)(eulerx / 360) * 360;
             eulerx -= (int)(eulerx / 180) * 360;
             HostPlayerCamera.localRotation = Quaternion.Slerp(HostPlayerCamera.localRotation, Quaternion.Euler(Mathf.Clamp(eulerx, ViewYMinAngle, ViewYMaxAngle), ViewXTurnSpeed * m_CameraInput.x + HostPlayerCamera.localRotation.eulerAngles.y, 0), Time.deltaTime * ViewAdjustSmooth);
-            HostPlayerCamera.localPosition = m_CameraFocusCenter - HostPlayerCamera.forward * m_CameraDist;
+
+            UpdateCameraPosition();
+        }
+        else if (m_IsMoving)
+        {
+            Vector3 cameraXZforward = Vector3.Scale(HostPlayerCamera.forward, new Vector3(1, 0, 1)).normalized;
+            if (Mathf.Abs(Mathf.Abs(Vector3.Dot(m_PlayerTarForward, cameraXZforward)) - m_PlayerTarForward.magnitude) > CameraEpsilon)
+            {
+                Quaternion tarRoate = Quaternion.LookRotation(Vector3.Slerp(cameraXZforward, m_PlayerTarForward, Time.fixedDeltaTime * ViewAutoSmooth));
+                tarRoate = Quaternion.Euler(HostPlayerCamera.localRotation.eulerAngles.x, tarRoate.eulerAngles.y, tarRoate.eulerAngles.z);
+                HostPlayerCamera.localRotation = tarRoate;
+
+                UpdateCameraPosition();
+            }
         }
     }
 
@@ -116,12 +139,11 @@ public class HostPlayerController : MonoBehaviour
         }
 
         PlayerAction tarAction = PlayerAction.ACTION_STAND;
-        bool isMoving = Mathf.Abs(m_MoveInput.y) > float.Epsilon || Mathf.Abs(m_MoveInput.x) > float.Epsilon;
-        if (isMoving)
+        m_IsMoving = Mathf.Abs(m_MoveInput.y) > float.Epsilon || Mathf.Abs(m_MoveInput.x) > float.Epsilon;
+        if (m_IsMoving)
         {
             tarAction = PlayerAction.ACTION_RUN;
-            Vector3 cameraXZforward = Vector3.Scale(HostPlayerCamera.forward, new Vector3(1, 0, 1)).normalized;
-            Vector3 desiredMove = cameraXZforward * m_MoveInput.y + HostPlayerCamera.right * m_MoveInput.x;
+            Vector3 desiredMove = Vector3.Scale(HostPlayerCamera.forward, new Vector3(1, 0, 1)).normalized * m_MoveInput.y + HostPlayerCamera.right * m_MoveInput.x;
 
             m_PlayerTarForward = desiredMove.normalized;
             RaycastHit hitInfo;
@@ -131,17 +153,6 @@ public class HostPlayerController : MonoBehaviour
 
             m_MoveDir.x = desiredMove.x * m_CurSpeed;
             m_MoveDir.z = desiredMove.z * m_CurSpeed;
-
-            if (!m_IsAdjustingCamera)
-            {
-                if (Mathf.Abs(Mathf.Abs(Vector3.Dot(m_PlayerTarForward, cameraXZforward)) - m_PlayerTarForward.magnitude) > CameraEpsilon)
-                {
-                    Quaternion tarRoate = Quaternion.LookRotation(Vector3.Slerp(cameraXZforward, m_PlayerTarForward, Time.fixedDeltaTime * ViewAutoSmooth));
-                    tarRoate = Quaternion.Euler(HostPlayerCamera.localRotation.eulerAngles.x, tarRoate.eulerAngles.y, tarRoate.eulerAngles.z);
-                    HostPlayerCamera.localRotation = tarRoate;
-                    HostPlayerCamera.localPosition = m_CameraFocusCenter - HostPlayerCamera.forward * m_CameraDist;
-                }
-            }
         }
         else
         {
@@ -163,11 +174,22 @@ public class HostPlayerController : MonoBehaviour
         else
         {
             m_MoveDir += Physics.gravity * GravityMultiplier * Time.fixedDeltaTime;
-            if(m_Jumping)
+            if (m_Jumping)
                 tarAction = PlayerAction.ACTION_JUMP;
         }
 
         m_CollisionFlags = m_CharacterController.Move(m_MoveDir * Time.fixedDeltaTime);
         HostPlayer.PlayAction(tarAction);
+    }
+
+    void UpdateCameraPosition()
+    {
+        RaycastHit hitInfo;
+        float cameradist = m_CameraDist;
+        if (m_CameraStopLayer > 0 && Physics.Raycast(m_CameraFocusCenter, HostPlayerCamera.forward,out hitInfo, m_CameraDist, m_CameraStopLayer))
+        {
+            cameradist = hitInfo.distance;
+        }
+        HostPlayerCamera.localPosition = m_CameraFocusCenter - HostPlayerCamera.forward * cameradist;
     }
 }

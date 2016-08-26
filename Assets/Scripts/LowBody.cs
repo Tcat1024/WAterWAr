@@ -24,12 +24,14 @@ public class LowBody : MonoBehaviour {
         InitRunAction,
         null,
         InitJumpAction,
+        null,
     };
 
     private delegate void ActionUpdateFunc(LowBody player);
     private ActionUpdateFunc[] m_ActionUpdateFuncs = new ActionUpdateFunc[(int)PlayerAction.ACTION_NUM]{
         null,
         UpdateRunAction,
+        null,
         null,
         null,
     };

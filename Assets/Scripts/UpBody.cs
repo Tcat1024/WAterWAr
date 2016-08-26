@@ -23,6 +23,7 @@ public class UpBody : MonoBehaviour {
         InitRunAction,
         null,
         InitJumpAction,
+        InitFireAction,
     };
 
     private delegate void ActionUpdateFunc(UpBody player);
@@ -31,6 +32,7 @@ public class UpBody : MonoBehaviour {
         UpdateRunAction,
         null,
         null,
+        null
     };
 
     private Quaternion m_LeftArmRoate;
@@ -86,6 +88,15 @@ public class UpBody : MonoBehaviour {
         UpdateRunAction(body);
     }
 
+    static void UpdateRunAction(UpBody body)
+    {
+        float fPer = (body.m_AniDuration - (int)(body.m_AniDuration / body.RunActionDuration) * body.RunActionDuration) / body.RunActionDuration;
+        fPer = Mathf.Sin(fPer * 2 * Mathf.PI);
+        float fRAD = 35f * fPer;
+        body.m_RightArmRoate = Quaternion.Euler(fRAD, 0, 0);
+        body.m_LeftArmRoate = Quaternion.Euler(-fRAD, 0, 0);
+    }
+
     static void InitJumpAction(UpBody body)
     {
         body.m_LeftArmRoate = Quaternion.Euler(0, 75, -80);
@@ -94,12 +105,12 @@ public class UpBody : MonoBehaviour {
         body.m_RightLowArmRoate = Quaternion.Euler(-115, 0, 0);
     }
 
-    static void UpdateRunAction(UpBody body)
+
+    static void InitFireAction(UpBody body)
     {
-        float fPer = (body.m_AniDuration - (int)(body.m_AniDuration / body.RunActionDuration) * body.RunActionDuration) / body.RunActionDuration;
-        fPer = Mathf.Sin(fPer * 2 * Mathf.PI);
-        float fRAD = 35f * fPer;
-        body.m_RightArmRoate = Quaternion.Euler(fRAD, 0, 0);
-        body.m_LeftArmRoate = Quaternion.Euler(-fRAD, 0, 0);
+        body.m_LeftLowArmRoate = Quaternion.Euler(0, 0, 0);
+        body.m_RightLowArmRoate = Quaternion.Euler(0, 0, 0);
+        body.m_LeftArmRoate = Quaternion.Euler(0, 0, 0);
+        body.m_RightArmRoate = Quaternion.Euler(0, 0, 0);
     }
 }
